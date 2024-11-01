@@ -1,0 +1,50 @@
+// ฟังก์ชันแสดงสินค้าภายในหมวดหมู่
+    private static void showProductsInCategory(int categoryId, Scanner scanner, String password) {
+        String role = getRole(password);
+        List<Product> products = productsByCategory.get(categoryId);
+        if (products != null && !products.isEmpty()) {
+            if (role.equals("STAFF") || role.equals("Regular Member")) {
+                System.out.println("============ " + categories.get(categoryId) + " ============");
+                System.out.printf("#\t%-12s\t%-8s\t%-8s\n", "Name", "Price (฿)", "Quantity");
+            }else if(role.equals("Silver Member") || role.equals("Gold Member")) {
+                System.out.println("============ " + categories.get(categoryId) + " ============");
+                System.out.printf("#\t%-12s\t%-16s\t   %-8s\n", "Name", "Price (฿)", "Quantity");
+            }
+            int index = 1;
+            for (Product product : products) {
+                double originalPrice = product.getPrice();
+                double discountedPrice = calculateDiscountedPrice(originalPrice, role);
+                if (role.equals("STAFF") || role.equals("Regular Member")) {
+                    System.out.printf("%d\t%-12s\t%-8.2f\t%-8d\n", index++, product.name, originalPrice, product.quantity);
+                }else if(role.equals("Silver Member") || role.equals("Gold Member")) {
+                    System.out.printf("%-3d\t%-15s\t%-8.2f(%7.2f)\t%5d\n", index++, product.name, discountedPrice, originalPrice, product.quantity);
+                }
+            }
+            System.out.println("================================");
+
+            // แสดงเมนูเพิ่มเติมให้เลือกการเรียงลำดับ
+            while (true) {
+                System.out.println("1. Show Name By DESC");
+                System.out.println("2. Show Quantity By ASC");
+                System.out.print("or Press Q to Exit : ");
+                String choice = scanner.next();
+
+                if (choice.equalsIgnoreCase("1")) {
+                    // เรียงลำดับตามชื่อสินค้าแบบ DESC
+                    products.sort(Comparator.comparing(Product::getName).reversed());
+                    displayProductList(products, categoryId, password);
+                } else if (choice.equalsIgnoreCase("2")) {
+                    // เรียงลำดับตามจำนวนสินค้าแบบ ASC
+                    products.sort(Comparator.comparingInt(Product::getQuantity));
+                    displayProductList(products, categoryId, password);
+                } else if (choice.equalsIgnoreCase("Q")) {
+                    break; // ออกจากเมนูการเรียงลำดับ
+                } else {
+                    System.out.println("Invalid choice, please select 1 or 2 or Q.");
+                    System.out.println("================================");
+                }
+            }
+        } else {
+            System.out.println("No products found for this category.");
+        }
+    }
